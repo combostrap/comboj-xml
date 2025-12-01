@@ -1,8 +1,3 @@
-# Eraldy Xml
+# Xml Library
 
-
-An xml library
-
-
-## Contrib
-[contrib](contrib.md)
+An XML library that implements common XML functions.
