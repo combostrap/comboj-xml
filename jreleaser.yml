@@ -8,11 +8,8 @@ environment:
     cliArtifactId: 'combostrap-xml-cli'
 
 project:
-  languages:
-    java:
-      groupId: com.combostrap
-      artifactId: combostrap-xml-cli
-      mainClass: com.combostrap.xml.cli.Xmli
+  # Mandatory for assemblers it seems
+  copyright: 2025 ComboStrap
 
 # Assemble create artifacts that can be distributed
 # Distribution uses them to define the set of artifacts in the release
@@ -37,11 +34,12 @@ assemble:
       # Common practice is to provide both .zip and .tar.gz
       formats:
         - ZIP
-        - TAR_GZ
+        #- TAR_GZ
       mainJar:
         path: '{{cliBaseDir}}/target/{{cliArtifactId}}-{{projectVersion}}.jar'
-        # The dependency jars are copied via maven with the deps profile
-      #  - pattern: '{{cliBaseDir}}/{{baseOutputDirectory}}/deps/*.jar'
+      # The dependency jars are copied via maven with the deps profile
+      jars:
+        - pattern: '{{cliBaseDir}}/target/deps/*.jar'
       swid:
         tagRef: swid-tag
 

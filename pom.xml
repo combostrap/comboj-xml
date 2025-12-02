@@ -29,11 +29,16 @@
     </dependencies>
   </dependencyManagement>
 
+  <licenses>
+    <license>
+      <name>Apache-2.0</name>
+    </license>
+  </licenses>
+
   <modules>
     <module>library</module>
     <module>cli</module>
   </modules>
-
 
   <properties>
     <!-- Skip deployment of all modules -->

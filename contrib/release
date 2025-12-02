@@ -86,8 +86,11 @@ if [ "$GOAL" == "$CHANGELOG_GOAL" ]; then
   exit
 fi
 
-# Create the archives
-mvnw clean jreleaser:assemble "${JRELEASER_COMMON_ARGS[@]}"
+# Create the cli archive
+mvnw clean
+mvnw package -DskipTests # create the lib and cli archive
+mvnw -Pdeps -pl cli # copy the dependencies (after packaging because cli depends on xml lib)
+mvnw jreleaser:assemble "${JRELEASER_COMMON_ARGS[@]}"
 
 if [ "$GOAL" == "$ASSEMBLE_GOAL" ]; then
   echo "Assemble only version $NEXT_VERSION done"

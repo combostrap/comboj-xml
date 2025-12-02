@@ -20,6 +20,8 @@
   <properties>
     <!-- Don't deploy to maven central -->
     <maven.deploy.skip>true</maven.deploy.skip>
+    <!-- Where to copy the dependencies for packaging -->
+    <dependency.output-directory>${project.build.directory}/deps</dependency.output-directory>
   </properties>
 
   <dependencies>
@@ -36,4 +38,27 @@
       <artifactId>combostrap-base</artifactId>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <!--
+      Copies the dependencies
+      They are used by JReleaser to create the java Archive
+      -->
+      <id>deps</id>
+      <build>
+        <defaultGoal>dependency:copy-dependencies</defaultGoal>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <configuration>
+              <outputDirectory>${dependency.output-directory}</outputDirectory>
+              <includeScope>runtime</includeScope>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
