@@ -35,9 +35,10 @@
   </modules>
 
 
-  <!-- Skip deployment of all modules -->
-  <!-- This pom is a module, we don't deploy it -->
   <properties>
+    <!-- Skip deployment of all modules -->
+    <!-- This pom is a module, we don't deploy to maven central -->
+    <!-- The libraries modules set it to true -->
     <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 

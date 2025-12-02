@@ -21,7 +21,7 @@ public class XmlExtract implements Callable<Integer> {
             // at least 1
             arity = "1..1"
     )
-    private String fileUri;
+    private Path fileUri;
 
     @CommandLine.Option(names = {
             "--xpath", "-xp"},
@@ -33,8 +33,7 @@ public class XmlExtract implements Callable<Integer> {
     @Override
     public Integer call() {
 
-        Path inputFilePath = Paths.get(fileUri);
-        Xmls.xmlExtract(inputFilePath, xpath);
+        Xmls.xmlExtract(fileUri, xpath);
         return 0;
 
     }

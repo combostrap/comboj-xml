@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 
@@ -24,14 +25,14 @@ public class XmlStructure implements Callable<Integer> {
             // at least 1
             arity = "1..1"
     )
-    private String filePath;
+    private Path filePath;
 
 
     @Override
     public Integer call() {
 
 
-        try (Reader reader = new InputStreamReader(new FileInputStream(filePath))) {
+        try (Reader reader = new InputStreamReader(new FileInputStream(filePath.toFile()))) {
 
             com.combostrap.xml.XmlStructure.of(reader).printNodeNames();
             return 0;

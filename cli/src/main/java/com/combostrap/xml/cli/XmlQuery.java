@@ -7,7 +7,7 @@ import picocli.CommandLine;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(
@@ -23,11 +23,12 @@ public class XmlQuery implements Callable<Integer> {
             // at least 1
             arity = "1..1"
     )
-    private String filePath;
+    private Path filePath;
 
     @CommandLine.Option(names = {
             "--xpath", "-xp"},
-            description = "defines the Xpath Expression."
+            description = "defines the Xpath Expression.",
+            required = true
     )
     private String xpath;
 
@@ -37,7 +38,7 @@ public class XmlQuery implements Callable<Integer> {
 
         try {
 
-            InputStream inputStream = Files.newInputStream(Paths.get(filePath));
+            InputStream inputStream = Files.newInputStream(filePath);
             System.out.println(Xmls.get(inputStream, xpath));
             return 0;
 

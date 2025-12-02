@@ -9,6 +9,7 @@ import picocli.CommandLine;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 
@@ -36,7 +37,7 @@ public class XmlPrint implements Callable<Integer> {
             // at least 1
             arity = "1..*"
     )
-    private String filename;
+    private Path filename;
 
     @CommandLine.Option(names = {
             "--dtd"},

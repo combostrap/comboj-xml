@@ -81,6 +81,7 @@ public class XmlDomTree {
                 stringBuilder.append("\"").append(n.getNodeValue()).append("\"");
             }
         }
+        stringBuilder.append(System.lineSeparator());
         return stringBuilder.toString();
     }
 
@@ -210,10 +211,9 @@ public class XmlDomTree {
             if (systemId == null) {
                 systemId = "null";
             }
-            String info = "URI=" + systemId +
+            return "URI=" + systemId +
                     " Line=" + spe.getLineNumber() +
                     ": " + spe.getMessage();
-            return info;
         }
 
         // The following methods are standard SAX LocalErrorHandler methods.

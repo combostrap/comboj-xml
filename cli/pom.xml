@@ -18,6 +18,7 @@
   </parent>
 
   <properties>
+    <!-- Don't deploy to maven central -->
     <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 

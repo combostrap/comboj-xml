@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Callable;
@@ -37,19 +36,19 @@ public class XmlUpdate implements Callable<Integer> {
             "-in"},
             description = "defines the Xml File Input"
     )
-    private String inputFilePathString;
+    private Path inputFilePath;
 
     @CommandLine.Option(names = {
             "-out"},
             description = "defines the Xml File created (Default to a timestamped file)"
     )
-    private String outputFilePath;
+    private Path outputFilePath;
 
     @CommandLine.Option(names = {
             "--csv"},
             description = "defines the Csv File that contains a list of row (xpath, value) to check the XML file in batch"
     )
-    private String csvPath;
+    private Path csvPath;
 
     @CommandLine.Option(names = {
             "--value"},
@@ -70,12 +69,10 @@ public class XmlUpdate implements Callable<Integer> {
                     ).toString());
         }
 
-        Path inputFilePath = Paths.get(inputFilePathString);
-
 
         if (outputFilePath == null) {
             String timeStamp = new SimpleDateFormat("yyyy.MM.dd_HH.mm.ss").format(new Date());
-            outputFilePath = inputFilePath + "_" + timeStamp + ".xml";
+            outputFilePath = inputFilePath.getParent().resolve(inputFilePath.getFileName().toString() + "_" + timeStamp + ".xml");
         }
 
 
@@ -83,16 +80,12 @@ public class XmlUpdate implements Callable<Integer> {
         OutputStream outputStream;
         try {
             inputStream = Files.newInputStream(inputFilePath);
-            outputStream = Files.newOutputStream(Paths.get(outputFilePath));
+            outputStream = Files.newOutputStream(outputFilePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        Path csvNioPath = null;
-        if (csvPath != null) {
-            csvNioPath = Paths.get(csvPath);
-        }
-        Xmls.update(inputStream, xpath, value, outputStream, csvNioPath);
+        Xmls.update(inputStream, xpath, value, outputStream, csvPath);
 
         System.out.println("The xml input file was updated and written to " + outputFilePath);
         return 0;

@@ -80,11 +80,7 @@ public final class NamespaceContextMap implements
         for (Map.Entry<String, String> entry : prefixMap
                 .entrySet()) {
             String nsURI = entry.getValue();
-            Set<String> prefixes = nsMap.get(nsURI);
-            if (prefixes == null) {
-                prefixes = new HashSet<String>();
-                nsMap.put(nsURI, prefixes);
-            }
+            Set<String> prefixes = nsMap.computeIfAbsent(nsURI, k -> new HashSet<>());
             prefixes.add(entry.getKey());
         }
         for (Map.Entry<String, Set<String>> entry : nsMap

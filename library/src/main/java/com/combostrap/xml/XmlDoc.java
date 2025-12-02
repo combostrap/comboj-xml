@@ -10,18 +10,28 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 
 import static com.combostrap.xml.Doms.outputEncoding;
 
+/**
+ * Static function that shows how to create a document
+ */
 public class XmlDoc {
-    public static Document of(DocumentBuilderFactory dbf, String filename) {
+
+    /**
+     * @param builder  - the builder
+     * @param filePath - the path
+     * @return a document
+     */
+    public static Document of(DocumentBuilderFactory builder, Path filePath) {
 
         try {
-            // Step 2: create a DocumentBuilder that satisfies the constraints
-            // specified by the DocumentBuilderFactory
-            DocumentBuilder documentBuilder = null;
 
-            documentBuilder = dbf.newDocumentBuilder();
+            // Create a DocumentBuilder that satisfies the constraints specified by the DocumentBuilderFactory
+            DocumentBuilder documentBuilder;
+
+            documentBuilder = builder.newDocumentBuilder();
 
 
             // Set an LocalErrorHandler before parsing
@@ -30,7 +40,7 @@ public class XmlDoc {
             documentBuilder.setErrorHandler(new LocalErrorHandler(new PrintWriter(errorWriter, true)));
 
             // Step 3: parse the input file
-            return documentBuilder.parse(new File(filename));
+            return documentBuilder.parse(filePath.toFile());
 
         } catch (ParserConfigurationException | IOException | SAXException e) {
             throw new RuntimeException(e);

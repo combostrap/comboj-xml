@@ -42,7 +42,7 @@ public class XmlCheck implements Callable<Integer> {
             "--csv-file", "-cf"},
             description = "defines the Csv File that contains a list of row (xpath, value) to check the XML file in batch"
     )
-    private String csvPath;
+    private Path csvPath;
 
     @CommandLine.Option(names = {
             "--value"},
@@ -79,11 +79,7 @@ public class XmlCheck implements Callable<Integer> {
             throw new RuntimeException(e);
         }
 
-        Path csvNioPath = null;
-        if (csvPath != null) {
-            csvNioPath = Paths.get(csvPath);
-        }
-        int nbError = Xmls.check(inputStream, xpath, value, printWriter, csvNioPath);
+        int nbError = Xmls.check(inputStream, xpath, value, printWriter, csvPath);
         printWriter.close();
         return nbError;
 
