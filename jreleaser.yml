@@ -2,6 +2,49 @@
 # curl https://jreleaser.org/schema/jreleaser-schema-1.17.0.json -o target/jreleaser-schema-1.17.0.json
 # $schema: https://jreleaser.org/schema/jreleaser-schema-1.17.0.json
 
+environment:
+  properties:
+    cliBaseDir: 'cli'
+    cliArtifactId: 'combostrap-xml-cli'
+
+project:
+  languages:
+    java:
+      groupId: com.combostrap
+      artifactId: combostrap-xml-cli
+      mainClass: com.combostrap.xml.cli.Xmli
+
+# Assemble create artifacts that can be distributed
+# Distribution uses them to define the set of artifacts in the release
+# Run it with:
+#   jreleaser assemble
+assemble:
+  # Execute it with
+  #    jreleaser assemble --assembler javaArchive
+  # or release -a
+  javaArchive:
+    xmli-nojre:
+      active: ALWAYS
+      executable:
+        name: xmli
+      exported: true # The artifacts generated will be used in the distribution called xmli-nojre
+      stereotype: CLI
+      # Name: ie xmli-1.0.0-nojre.zip or tar
+      archiveName: '{{cliArtifactId}}-{{projectEffectiveVersion}}-nojre'
+      # Main Class
+      java:
+        mainClass: com.combostrap.xml.cli.Xmli
+      # Common practice is to provide both .zip and .tar.gz
+      formats:
+        - ZIP
+        - TAR_GZ
+      mainJar:
+        path: '{{cliBaseDir}}/target/{{cliArtifactId}}-{{projectVersion}}.jar'
+        # The dependency jars are copied via maven with the deps profile
+      #  - pattern: '{{cliBaseDir}}/{{baseOutputDirectory}}/deps/*.jar'
+      swid:
+        tagRef: swid-tag
+
 
 # Create a GitHub release
 # https://jreleaser.org/guide/latest/reference/release/github.html

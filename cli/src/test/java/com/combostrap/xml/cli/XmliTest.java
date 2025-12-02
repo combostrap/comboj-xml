@@ -23,7 +23,7 @@ class XmliTest {
     void helpTest() {
         String[] args = {"-h"};
         String output = TestUtil.captureStdout(args);
-        System.out.println(output);
+        //System.out.println(output);
         Assertions.assertEquals("Usage", output.substring(0, "Usage".length()));
     }
 

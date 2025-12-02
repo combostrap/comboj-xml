@@ -20,13 +20,25 @@ BUMP_TYPE="early"
 GOAL="release"
 ASSEMBLE_GOAL="assemble"
 PREPARE_GOAL="prepare"
+CONFIG_GOAL="config"
+CHANGELOG_GOAL="changelog"
+DEBUG=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -a | --assemble-only)
       GOAL="$ASSEMBLE_GOAL"
       ;;
+    -c | --config-only)
+      GOAL="$CONFIG_GOAL"
+      ;;
+    -l | --changelog-only)
+      GOAL="$CHANGELOG_GOAL"
+      ;;
     -p | --prepare-only)
       GOAL="$PREPARE_GOAL"
+      ;;
+    --debug)
+      DEBUG=true
       ;;
     -h | --help)
       synopsis
@@ -55,11 +67,26 @@ fi
 
 # Common Arg
 JRELEASER_FILE="$PROJECT_ROOT/jreleaser.yml"
-JRELEASER_COMMON_ARGS+=(-Djreleaser.config.file="$JRELEASER_FILE" --non-recursive)
+JRELEASER_COMMON_ARGS=(-Djreleaser.config.file="$JRELEASER_FILE" --non-recursive)
+
+# Debug
+if [ $DEBUG == true ]; then
+  JRELEASER_COMMON_ARGS+=(--debug)
+fi
+
+if [ "$GOAL" == "$CONFIG_GOAL" ]; then
+  mvnw jreleaser:config "${JRELEASER_COMMON_ARGS[@]}"
+  echo "Config only version $NEXT_VERSION done"
+  exit
+fi
+
+if [ "$GOAL" == "$CHANGELOG_GOAL" ]; then
+  mvnw jreleaser:changelog "${JRELEASER_COMMON_ARGS[@]}"
+  echo "Changelog only version $NEXT_VERSION done"
+  exit
+fi
 
 # Create the archives
-
-
 mvnw clean jreleaser:assemble "${JRELEASER_COMMON_ARGS[@]}"
 
 if [ "$GOAL" == "$ASSEMBLE_GOAL" ]; then

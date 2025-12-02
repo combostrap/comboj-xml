@@ -14,7 +14,7 @@ class XmlPrintTest {
     void printTest() throws FileNotFoundException {
         Path pomXml = Fs.closest(Paths.get(""), ".git").getParent().resolve("pom.xml");
         String output = TestUtil.captureStdout(new String[]{"print", pomXml.toString()});
-        Assertions.assertFalse(output.isEmpty());
+        Assertions.assertFalse(output.isEmpty(),"Not empty");
         Assertions.assertEquals("DOC", output.substring(0, 3));
         //System.out.println(output);
     }

@@ -97,13 +97,10 @@ public class XmlPrint implements Callable<Integer> {
     public Integer call() {
 
 
-        boolean xsdValidate = false;
-        if (schemaSource != null) {
-            xsdValidate = true;
-        }
+        boolean xsdValidate = schemaSource != null;
 
 
-        // Step 1: create a DocumentBuilderFactory and configure it
+        // Create a DocumentBuilderFactory and configure it
         DocumentBuilderFactory documentBuilderFactory =
                 DocumentBuilderFactory.newInstance();
 
