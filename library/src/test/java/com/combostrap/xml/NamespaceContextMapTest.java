@@ -28,8 +28,8 @@ public class NamespaceContextMapTest {
             String prefix = entry.getKey();
             String namespaceURI = entry.getValue();
 
-            Assertions.assertEquals( namespaceURI,
-                    context.getNamespaceURI(prefix),"namespaceURI");
+            Assertions.assertEquals(namespaceURI,
+                    context.getNamespaceURI(prefix), "namespaceURI");
             boolean found = false;
             Iterator<?> prefixes = context
                     .getPrefixes(namespaceURI);
@@ -62,13 +62,15 @@ public class NamespaceContextMapTest {
 
     @Test
     public void testModify() {
+
         NamespaceContextMap context = new NamespaceContextMap();
 
         try {
             Map<String, String> ctxtMap = context.getMap();
             ctxtMap.put("a", "b");
             Assertions.fail("rw");
-        } catch (UnsupportedOperationException e) {
+        } catch (UnsupportedOperationException ignored) {
+            // Should fail
         }
 
         try {
@@ -77,8 +79,10 @@ public class NamespaceContextMapTest {
             it.next();
             it.remove();
             Assertions.fail("rw");
-        } catch (UnsupportedOperationException e) {
+        } catch (UnsupportedOperationException ignored) {
+            // Should fail
         }
+
     }
 
     @Test

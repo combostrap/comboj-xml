@@ -53,7 +53,7 @@ public class XmlVersionProvider implements CommandLine.IVersionProvider {
             // Not in a jar
             Path pomXml;
             try {
-                pomXml = Fs.closest(Paths.get(""), "pom.xml");
+                pomXml = Fs.closest(Paths.get(""), ".git").getParent().resolve("pom.xml");
             } catch (FileNotFoundException ex) {
                 return null;
             }

@@ -1,0 +1,143 @@
+# Bug in idea, you need to download and map the schema to the below file
+# curl https://jreleaser.org/schema/jreleaser-schema-1.17.0.json -o target/jreleaser-schema-1.17.0.json
+# $schema: https://jreleaser.org/schema/jreleaser-schema-1.17.0.json
+
+environment:
+  properties:
+    cliBaseDir: 'cli'
+    cliArtifactId: 'combostrap-xml-cli'
+
+project:
+  # Mandatory for assemblers it seems
+  copyright: 2025 ComboStrap
+  stereotype: CLI
+  # Mandatory for chocolatey
+  # Otherwise we get the error: Distribution tags must not be empty
+  tags:
+    - xml
+    - cli
+  languages:
+    java:
+      artifactId: combostrap-cli # by default in the distributions, this is xmli-nojre
+
+# Assemble create artifacts that can be distributed
+# Distribution uses them to define the set of artifacts in the release
+# Run it with:
+#   jreleaser assemble
+assemble:
+  # Execute it with
+  #    release -a
+  javaArchive:
+    xmli-nojre:
+      active: ALWAYS
+      executable:
+        name: xmli
+      exported: true # The artifacts generated will be used in the distribution called xmli-nojre
+      stereotype: CLI
+      # Name: ie xmli-1.0.0-nojre.zip or tar
+      archiveName: '{{cliArtifactId}}-{{projectEffectiveVersion}}-nojre'
+      # Main Class
+      java:
+        mainClass: com.combostrap.xml.cli.Xmli
+      # Common practice is to provide both .zip and .tar.gz
+      formats:
+        - ZIP
+        #- TAR_GZ
+      mainJar:
+        # because we run the cli project, the baseOutput is cli
+        path: '{{baseOutputDirectory}}/{{cliArtifactId}}-{{projectVersion}}.jar'
+      # The dependency jars are copied via maven with the deps profile
+      jars:
+        - pattern: '{{cliBaseDir}}/target/deps/*.jar'
+      swid:
+        tagRef: swid-tag
+
+
+# Create a GitHub release
+# https://jreleaser.org/guide/latest/reference/release/github.html
+release:
+  github:
+    # Overwrite will delete the release.
+    overwrite: true
+    # Release by default
+    releaseName: "Release {{projectEffectiveVersion}}"
+    prerelease:
+      # A regex to determine if the project version is a prerelease
+      pattern: .*-rc.*
+    # https://jreleaser.org/guide/latest/reference/release/changelog.html
+    changelog:
+      formatted: ALWAYS
+      format: '- {{commitShortHash}} {{commitTitle}}'
+      preset: 'conventional-commits'
+      contributors:
+        enabled: false
+      content: |
+        # Changelog Version {{projectEffectiveVersion}}
+
+        {{changelogChanges}}
+      labelers:
+        - label: 'feature'
+          title: 'Resolves #'
+          body: 'Resolves #'
+        - label: 'issue'
+          title: 'Fixes #'
+          body: 'Fixes #'
+        - label: 'issue'
+          title: 'Relates to #'
+          body: 'Relates to #'
+        - label: 'task'
+          title: '[chore]'
+      categories:
+        - title: '🚀 Features'
+          key: 'features'
+          labels:
+            - 'feature'
+        - title: '✅ Issues'
+          key: 'issues'
+          labels:
+            - 'issue'
+        - title: '🧰 Tasks'
+          key: 'tasks'
+          labels:
+            - 'task'
+      replacers:
+        - search: '\[chore\] '
+
+distributions:
+  # Name taken from the java archive assembly
+  xmli-nojre:
+    # Artifacts are defined in the assembly
+    # Run it with:
+    #   release -p
+    brew:
+      active: ALWAYS
+      formulaName: 'xmli'
+      commitAuthor:
+        name: ReleaseBot
+        email: support@combostrap.com
+      repository:
+        tagName: '{{projectName}}-{{tagName}}'
+    # Run it with:
+    #   mvnw jreleaser:prepare -Djreleaser.packagers=chocolatey -pl cli
+    # https://jreleaser.org/guide/latest/reference/packagers/chocolatey.html#_distribution_support
+    chocolatey:
+      active: ALWAYS
+      continueOnError: true
+      title: 'Xml Cli'
+      iconUrl: 'https://rawcdn.githack.com/combostrap/site-com-combostrap/fcae9343885f4b6e4e8f977a05cb7353e84c3c8c/data/media/android-chrome-192x192.png'
+      packageName: 'xmli' # no template (name of the package, ie name of the application)
+      commitAuthor:
+        name: ReleaseBot
+        email: support@combostrap.com
+      # As seen in the doc: "package and push on CI, set remoteBuild to true"
+      # If false, chocolatey.apiKey must not be blank
+      # Why because it would perform the pack and push command immediately
+      remoteBuild: true
+      # Repo
+      # The bucket repository expects a secret named CHOCOLATEY_API_KEY
+      # as it's used by local workflow to pack and push
+      repository:
+        active: RELEASE
+        name: chocolatey-bucket
+        tagName: '{{projectName}}-{{tagName}}'
+        commitMessage: '{{projectName}} {{tagName}}'

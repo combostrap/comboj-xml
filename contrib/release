@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+# Release of the cli
+set -TCEeuo pipefail
+
+function synopsis() {
+  cat << EOF
+
+  Release $PROJECT_NAME:
+
+      $(basename "$0") [options] [patch|minor|major|early]
+
+  Options:
+    * -a | --assemble-only    : create the archive only (will not release)
+    * -c | --config-only      : create the config only (will not release)
+    * -l | --changelog-only   : create the changelog only (will not release)
+    * -p | --prepare-only     : create the archive and the packagers manifest only (will not release)
+    * --debug                 : set the level to debug
+  Args:
+    * patch|minor|major|early : is the type of bump for the semver version (default to early - no bump)
+
+  Full release is performed if the bump type is not early
+
+EOF
+}
+
+BUMP_TYPE="early"
+GOAL="release"
+ASSEMBLE_GOAL="assemble"
+PREPARE_GOAL="prepare"
+CONFIG_GOAL="config"
+CHANGELOG_GOAL="changelog"
+DEBUG=false
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -a | --assemble-only)
+      GOAL="$ASSEMBLE_GOAL"
+      ;;
+    -c | --config-only)
+      GOAL="$CONFIG_GOAL"
+      ;;
+    -l | --changelog-only)
+      GOAL="$CHANGELOG_GOAL"
+      ;;
+    -p | --prepare-only)
+      GOAL="$PREPARE_GOAL"
+      ;;
+    --debug)
+      DEBUG=true
+      ;;
+    -h | --help)
+      synopsis
+      exit
+      ;;
+    *)
+      BUMP_TYPE=${1}
+      shift
+      break
+      ;;
+  esac
+  shift
+done
+
+NEXT_VERSION="early"
+if [ "$BUMP_TYPE" != "early" ]; then
+  # Get the next version
+  export GIT_CLIFF__BUMP__INITIAL_TAG=v0.1.0 # by default it's 0.1.0
+  NEXT_VERSION=$(git cliff --unreleased --bump "$BUMP_TYPE" --context --tag-pattern "v[0-9]+\\.[0-9]+\\.[0-9]+" | jq -r '.[0].version' | tr -d "v")
+  # Jreleaser read the version from the pom file
+  # We need to modify the pom file
+  mvnw versions:set -DgenerateBackupPoms=false -DnewVersion="$NEXT_VERSION"
+  git commit -am "chore(release): $NEXT_VERSION"
+  git push origin
+fi
+
+# Common Arg
+# Because we call only the cli module, jreleaser is expected to be in this directory
+JRELEASER_FILE="jreleaser.yml"
+JRELEASER_COMMON_ARGS=(-Djreleaser.config.file="$JRELEASER_FILE" -pl cli -Dorg.slf4j.simpleLogger.defaultLogLevel=warn)
+
+# Debug
+if [ $DEBUG == true ]; then
+  JRELEASER_COMMON_ARGS+=(--debug)
+fi
+
+if [ "$GOAL" == "$CONFIG_GOAL" ]; then
+  echo "Config only version $NEXT_VERSION"
+  mvnw jreleaser:config "${JRELEASER_COMMON_ARGS[@]}"
+  echo "Config only version $NEXT_VERSION done"
+  exit
+fi
+
+if [ "$GOAL" == "$CHANGELOG_GOAL" ]; then
+  echo "Changelog only version $NEXT_VERSION"
+  mvnw clean jreleaser:changelog "${JRELEASER_COMMON_ARGS[@]}"
+  echo "Changelog only version $NEXT_VERSION done"
+  exit
+fi
+
+# Create the cli archive
+echo "Cleaning"
+mvnw clean -Dorg.slf4j.simpleLogger.defaultLogLevel=warn
+echo "Packaging"
+mvnw package -DskipTests  -Dorg.slf4j.simpleLogger.defaultLogLevel=warn  # create the lib and cli archive
+echo "Copying dependencies"
+mvnw -Pdeps -pl cli -Dorg.slf4j.simpleLogger.defaultLogLevel=warn # copy the dependencies (after packaging because cli depends on xml lib)
+echo "Assembling version $NEXT_VERSION"
+mvnw jreleaser:assemble "${JRELEASER_COMMON_ARGS[@]}"
+
+if [ "$GOAL" == "$ASSEMBLE_GOAL" ]; then
+  echo "Assemble only version $NEXT_VERSION done"
+  exit
+fi
+
+if [ "$GOAL" == "$PREPARE_GOAL" ]; then
+  echo "Preparing only version $NEXT_VERSION"
+  mvnw jreleaser:prepare "${JRELEASER_COMMON_ARGS[@]}"
+  echo "Prepare only version $NEXT_VERSION done"
+  exit
+fi
+
+# Release
+if [ "$BUMP_TYPE" == "early" ]; then
+  echo "Version release of $NEXT_VERSION"
+  mvnw jreleaser:release "${JRELEASER_COMMON_ARGS[@]}"
+  echo "Version release of $NEXT_VERSION done"
+  exit
+fi
+
+# This is not a snapshot: full release
+# https://jreleaser.org/guide/latest/tools/jreleaser-maven.html
+echo "Full release of $NEXT_VERSION"
+mvnw jreleaser:full-release "${JRELEASER_COMMON_ARGS[@]}"
+echo "Full release of $NEXT_VERSION done"
+
+# Next dev iteration
+NEXT_VERSION=$(git cliff --unreleased --bump "patch" --context --tag-pattern "v[0-9]+\\.[0-9]+\\.[0-9]+" | jq -r '.[0].version' | tr -d "v")
+NEXT_SNAPSHOT_VERSION="$NEXT_VERSION-snapshot"
+echo "Next Iteration Commit to $NEXT_SNAPSHOT_VERSION"
+mvnw versions:set -DgenerateBackupPoms=false -DnewVersion="$NEXT_SNAPSHOT_VERSION"
+git commit -am "chore(next): $NEXT_SNAPSHOT_VERSION"
+git push origin
+echo "Next Iteration Commit to $NEXT_SNAPSHOT_VERSION: done"

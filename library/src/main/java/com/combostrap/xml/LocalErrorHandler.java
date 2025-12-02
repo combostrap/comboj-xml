@@ -6,9 +6,8 @@ import org.xml.sax.SAXParseException;
 import java.io.PrintWriter;
 
 /**
- * Created by gerard on 31-05-2017.
  * Error handler to report errors and warnings
- *
+ * <p>
  * The name has the Local prefix because sax has also a ErrorHandler
  */
 public class LocalErrorHandler implements org.xml.sax.ErrorHandler {
@@ -18,22 +17,29 @@ public class LocalErrorHandler implements org.xml.sax.ErrorHandler {
      */
     private PrintWriter out;
 
+    /**
+     * The constructor
+     *
+     * @param out - the writer
+     */
     public LocalErrorHandler(PrintWriter out) {
         this.out = out;
     }
 
     /**
      * Returns a string describing parse exception details
+     *
+     * @param saxParseException - the exception
+     * @return the info
      */
-    private String getParseExceptionInfo(SAXParseException spe) {
-        String systemId = spe.getSystemId();
+    private String getParseExceptionInfo(SAXParseException saxParseException) {
+        String systemId = saxParseException.getSystemId();
         if (systemId == null) {
             systemId = "null";
         }
-        String info = "URI=" + systemId +
-                " Line=" + spe.getLineNumber() +
-                ": " + spe.getMessage();
-        return info;
+        return "URI=" + systemId +
+                " Line=" + saxParseException.getLineNumber() +
+                ": " + saxParseException.getMessage();
     }
 
     // The following methods are standard SAX LocalErrorHandler methods.

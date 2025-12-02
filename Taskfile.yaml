@@ -22,3 +22,7 @@ tasks:
   deploy:
     cmds:
       - deploy
+  # Get the jreleaser config
+  release:config:
+    cmds:
+      - ./mvnw jreleaser:config -Djreleaser.config.file=jreleaser.yml --non-recursive

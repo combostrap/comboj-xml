@@ -16,9 +16,10 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <!-- By default, it's true -->
-  <!-- We deploy it to maven central -->
+
   <properties>
+    <!-- By default, it's true on the root module -->
+    <!-- We deploy it to maven central -->
     <maven.deploy.skip>false</maven.deploy.skip>
   </properties>
 

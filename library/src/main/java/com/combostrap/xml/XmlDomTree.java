@@ -8,23 +8,11 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-
-import static com.combostrap.xml.Doms.outputEncoding;
-
-
 /**
  * Inspired by the DOM echo example program of `Edwin GOEI`
  */
 public class XmlDomTree {
 
-
-    /**
-     * Output goes here
-     */
-    private final PrintWriter out;
 
     /**
      * Indent level
@@ -39,13 +27,6 @@ public class XmlDomTree {
 
 
     public XmlDomTree() {
-        OutputStreamWriter outWriter;
-        try {
-            outWriter = new OutputStreamWriter(System.out, outputEncoding);
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-        this.out = new PrintWriter(outWriter, true);
     }
 
     /**
@@ -81,6 +62,7 @@ public class XmlDomTree {
                 stringBuilder.append("\"").append(n.getNodeValue()).append("\"");
             }
         }
+        stringBuilder.append(System.lineSeparator());
         return stringBuilder.toString();
     }
 
@@ -88,12 +70,16 @@ public class XmlDomTree {
         return new XmlDomTree();
     }
 
+    public static void print() {
+        System.out.println("print is called");
+    }
+
     /**
      * Indent to the current level in multiples of basicIndent
      */
     private void outputIndentation() {
         for (int i = 0; i < indent; i++) {
-            out.print(basicIndent);
+            System.out.print(basicIndent);
         }
     }
 
@@ -101,34 +87,35 @@ public class XmlDomTree {
      * Recursive routine to print out DOM tree nodes
      */
     public void echo(Node n) {
+
         // Indent to the current level before printing anything
         outputIndentation();
 
         int type = n.getNodeType();
         switch (type) {
             case Node.ATTRIBUTE_NODE:
-                out.print("ATTR:");
-                out.print(printlnCommon(n));
+                System.out.print("ATTR:");
+                System.out.print(printlnCommon(n));
                 break;
             case Node.CDATA_SECTION_NODE:
-                out.print("CDATA:");
-                out.print(printlnCommon(n));
+                System.out.print("CDATA:");
+                System.out.print(printlnCommon(n));
                 break;
             case Node.COMMENT_NODE:
-                out.print("COMM:");
-                out.print(printlnCommon(n));
+                System.out.print("COMM:");
+                System.out.print(printlnCommon(n));
                 break;
             case Node.DOCUMENT_FRAGMENT_NODE:
-                out.print("DOC_FRAG:");
-                out.print(printlnCommon(n));
+                System.out.print("DOC_FRAG:");
+                System.out.print(printlnCommon(n));
                 break;
             case Node.DOCUMENT_NODE:
-                out.print("DOC:");
-                out.print(printlnCommon(n));
+                System.out.print("DOC:");
+                System.out.print(printlnCommon(n));
                 break;
             case Node.DOCUMENT_TYPE_NODE:
-                out.print("DOC_TYPE:");
-                out.print(printlnCommon(n));
+                System.out.print("DOC_TYPE:");
+                System.out.print(printlnCommon(n));
 
                 // Print entities if any
                 NamedNodeMap nodeMap = ((DocumentType) n).getEntities();
@@ -140,8 +127,8 @@ public class XmlDomTree {
                 indent -= 2;
                 break;
             case Node.ELEMENT_NODE:
-                out.print("ELEM:");
-                out.print(printlnCommon(n));
+                System.out.print("ELEM:");
+                System.out.print(printlnCommon(n));
 
                 // Print attributes if any.  Note: element attributes are not
                 // children of ELEMENT_NODEs but are properties of their
@@ -156,28 +143,28 @@ public class XmlDomTree {
                 indent -= 2;
                 break;
             case Node.ENTITY_NODE:
-                out.print("ENT:");
-                out.print(printlnCommon(n));
+                System.out.print("ENT:");
+                System.out.print(printlnCommon(n));
                 break;
             case Node.ENTITY_REFERENCE_NODE:
-                out.print("ENT_REF:");
-                out.print(printlnCommon(n));
+                System.out.print("ENT_REF:");
+                System.out.print(printlnCommon(n));
                 break;
             case Node.NOTATION_NODE:
-                out.print("NOTATION:");
-                out.print(printlnCommon(n));
+                System.out.print("NOTATION:");
+                System.out.print(printlnCommon(n));
                 break;
             case Node.PROCESSING_INSTRUCTION_NODE:
-                out.print("PROC_INST:");
-                out.print(printlnCommon(n));
+                System.out.print("PROC_INST:");
+                System.out.print(printlnCommon(n));
                 break;
             case Node.TEXT_NODE:
-                out.print("TEXT:");
-                out.print(printlnCommon(n));
+                System.out.print("TEXT:");
+                System.out.print(printlnCommon(n));
                 break;
             default:
-                out.print("UNSUPPORTED NODE: " + type);
-                out.print(printlnCommon(n));
+                System.out.print("UNSUPPORTED NODE: " + type);
+                System.out.print(printlnCommon(n));
                 break;
         }
 
@@ -193,14 +180,6 @@ public class XmlDomTree {
 
     // Error handler to report errors and warnings
     private static class MyErrorHandler implements ErrorHandler {
-        /**
-         * Error handler output goes here
-         */
-        private final PrintWriter out;
-
-        MyErrorHandler(PrintWriter out) {
-            this.out = out;
-        }
 
         /**
          * Returns a string describing parse exception details
@@ -210,17 +189,16 @@ public class XmlDomTree {
             if (systemId == null) {
                 systemId = "null";
             }
-            String info = "URI=" + systemId +
+            return "URI=" + systemId +
                     " Line=" + spe.getLineNumber() +
                     ": " + spe.getMessage();
-            return info;
         }
 
         // The following methods are standard SAX LocalErrorHandler methods.
         // See SAX documentation for more info.
 
         public void warning(SAXParseException spe) throws SAXException {
-            out.println("Warning: " + getParseExceptionInfo(spe));
+            System.out.println("Warning: " + getParseExceptionInfo(spe));
         }
 
         public void error(SAXParseException spe) throws SAXException {

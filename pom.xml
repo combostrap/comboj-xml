@@ -29,15 +29,21 @@
     </dependencies>
   </dependencyManagement>
 
+  <licenses>
+    <license>
+      <name>Apache-2.0</name>
+    </license>
+  </licenses>
+
   <modules>
     <module>library</module>
     <module>cli</module>
   </modules>
 
-
-  <!-- Skip deployment of all modules -->
-  <!-- This pom is a module, we don't deploy it -->
   <properties>
+    <!-- Skip deployment of all modules -->
+    <!-- This pom is a module, we don't deploy to maven central -->
+    <!-- The libraries modules set it to true -->
     <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 

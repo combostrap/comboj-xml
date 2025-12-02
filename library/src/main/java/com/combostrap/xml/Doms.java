@@ -32,21 +32,17 @@ public class Doms {
 
     /**
      * Get a node list from an xPath
-     * @param doc
-     * @param xPath
-     * @return
      */
-    public static NodeList getNodeList(Document doc, String xPath) {
+    public static NodeList getNodeList(Document document, String xPath) {
 
         NodeList nodeList;
-        XPathFactory xPathfactory = XPathFactory.newInstance();
-        XPath xpath = xPathfactory.newXPath();
+        XPath xpath = XPathFactory.newInstance().newXPath();
 
         XPathExpression xPathExpression;
         try {
 
             xPathExpression = xpath.compile(xPath);
-            nodeList = (NodeList) xPathExpression.evaluate(doc, XPathConstants.NODESET);
+            nodeList = (NodeList) xPathExpression.evaluate(document, XPathConstants.NODESET);
 
         } catch (XPathExpressionException e) {
             throw new RuntimeException(e);
@@ -55,35 +51,33 @@ public class Doms {
     }
 
     /**
-     * Return the text that a node contains. This routine:<ul>
-     * <li>Ignores comments and processing instructions.
-     * <li>Concatenates TEXT nodes, CDATA nodes, and the results of
-     *     recursively processing EntityRef nodes.
-     * <li>Ignores any element nodes in the sublist.
-     *     (Other possible options are to recurse into element
-     *      sublists or throw an exception.)
+     * Return the text that a node contains. This routine:
+     * <ul>
+     *  <li>Ignores comments and processing instructions.
+     *  <li>Concatenates TEXT nodes, CDATA nodes, and the results of
+     * recursively processing EntityRef nodes.
+     *  <li>Ignores any element nodes in the sublist.
+     *  (Other possible options are to recurse into element sublist or throw an exception.)
      * </ul>
-     * @param    node  a  DOM node
-     * @return   a String representing its contents
+     *
+     * @param node a DOM node
+     * @return a string representing its contents
+     * Duplicate of {@link Node#getTextContent()}
      */
     public static String getText(Node node) {
-        StringBuffer result = new StringBuffer();
-        if (! node.hasChildNodes()) return "";
+        StringBuilder result = new StringBuilder();
+        if (!node.hasChildNodes()) return node.getNodeValue();
 
         NodeList list = node.getChildNodes();
-        for (int i=0; i < list.getLength(); i++) {
+        for (int i = 0; i < list.getLength(); i++) {
             Node subnode = list.item(i);
             if (subnode.getNodeType() == Node.TEXT_NODE) {
                 result.append(subnode.getNodeValue());
-            }
-            else if (subnode.getNodeType() ==
-                    Node.CDATA_SECTION_NODE)
-            {
+            } else if (subnode.getNodeType() ==
+                    Node.CDATA_SECTION_NODE) {
                 result.append(subnode.getNodeValue());
-            }
-            else if (subnode.getNodeType() ==
-                    Node.ENTITY_REFERENCE_NODE)
-            {
+            } else if (subnode.getNodeType() ==
+                    Node.ENTITY_REFERENCE_NODE) {
                 // Recurse into the subtree for text
                 // (and ignore comments)
                 result.append(getText(subnode));
@@ -94,52 +88,46 @@ public class Doms {
 
 
     /**
-     * Return a DOM from an inputstream
-     *
-     * @param xmlFile
-     * @return
+     * Return a DOM from an input stream
      */
     public static Document getDom(InputStream xmlFile) {
 
         // Step 1: create a DocumentBuilderFactory and configure it
-        DocumentBuilderFactory dbf =
-                DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory builder = DocumentBuilderFactory.newInstance();
 
-        // Set namespaceAware to true to of a DOM Level 2 tree with nodes
-        // containing namespace information.  This is necessary because the
-        // default value from JAXP 1.0 was defined to be false.
-        dbf.setNamespaceAware(true);
+        // Important: Disable namespace-awareness for the simple XPath to work
+        // If you enable it, you must configure a NamespaceContext for the XPath
+        builder.setNamespaceAware(false);
 
         // Set the validation mode to no validation (ie no DTD
         // validation, or XSD validation)
-        dbf.setValidating(false);
+        builder.setValidating(false);
 
         // Optional: set various configuration options
-        dbf.setIgnoringComments(false);
-        dbf.setIgnoringElementContentWhitespace(false);
-        dbf.setCoalescing(true);
+        builder.setIgnoringComments(false);
+        builder.setIgnoringElementContentWhitespace(false);
+        builder.setCoalescing(true);
         // The opposite of creating entity ref nodes is expanding them inline
-        dbf.setExpandEntityReferences(false);
+        builder.setExpandEntityReferences(false);
 
-        // Step 2: create a DocumentBuilder that satisfies the constraints
+        // Create a DocumentBuilder that satisfies the constraints
         // specified by the DocumentBuilderFactory
-        DocumentBuilder documentBuilder = null;
+        DocumentBuilder documentBuilder;
 
         // A big try to catch all JAXP and Trax exception
-        NodeList nodeList;
         Document doc;
         try {
 
-            documentBuilder = dbf.newDocumentBuilder();
+            documentBuilder = builder.newDocumentBuilder();
 
             // Set an LocalErrorHandler before parsing
-            OutputStreamWriter errorWriter = null;
+            OutputStreamWriter errorWriter;
 
             errorWriter = new OutputStreamWriter(System.err, outputEncoding);
 
             documentBuilder.setErrorHandler(new LocalErrorHandler(new PrintWriter(errorWriter, true)));
 
-            // Step 3: parse the input file
+            // Parse the input file
             doc = documentBuilder.parse(xmlFile);
 
         } catch (Exception e) {
@@ -151,8 +139,6 @@ public class Doms {
 
     /**
      * Update the text node of the nodeList with the value
-     * @param value
-     * @param nodeList
      */
     public static void updateText(NodeList nodeList, String value) {
 
@@ -175,8 +161,6 @@ public class Doms {
 
     /**
      * Print a DOM to a stream
-     * @param document
-     * @param outputStream
      */
     public static void toStream(Document document, OutputStream outputStream) {
 
@@ -224,17 +208,14 @@ public class Doms {
     /**
      * * A wrapper functionm of {@link #toStream(Document, OutputStream)}
      * that prints to standard out
-     * @param dom
      */
     protected static void toConsole(Document dom) {
         toStream(dom, System.out);
     }
 
     /**
-     * A wrapper functionm of {@link #toStream(Document, OutputStream)}
+     * A wrapper function of {@link #toStream(Document, OutputStream)}
      * that prints to a file
-     * @param dom
-     * @param path
      */
     protected static void toFile(Document dom, Path path) {
 
@@ -286,7 +267,7 @@ public class Doms {
                 stringBuilder.append("TEXT:");
                 break;
             default:
-                stringBuilder.append("UNSUPPORTED NODE: " + type);
+                stringBuilder.append("UNSUPPORTED NODE: ").append(type);
                 break;
         }
         stringBuilder.append(printlnCommon(n));

@@ -9,6 +9,7 @@ import picocli.CommandLine;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 
@@ -36,7 +37,7 @@ public class XmlPrint implements Callable<Integer> {
             // at least 1
             arity = "1..*"
     )
-    private String filename;
+    private Path filename;
 
     @CommandLine.Option(names = {
             "--dtd"},
@@ -96,13 +97,10 @@ public class XmlPrint implements Callable<Integer> {
     public Integer call() {
 
 
-        boolean xsdValidate = false;
-        if (schemaSource != null) {
-            xsdValidate = true;
-        }
+        boolean xsdValidate = schemaSource != null;
 
 
-        // Step 1: create a DocumentBuilderFactory and configure it
+        // Create a DocumentBuilderFactory and configure it
         DocumentBuilderFactory documentBuilderFactory =
                 DocumentBuilderFactory.newInstance();
 
