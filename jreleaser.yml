@@ -1,0 +1,53 @@
+# Bug in idea, you need to download and map the schema to the below file
+# curl https://jreleaser.org/schema/jreleaser-schema-1.17.0.json -o target/jreleaser-schema-1.17.0.json
+# $schema: https://jreleaser.org/schema/jreleaser-schema-1.17.0.json
+
+
+# Create a GitHub release
+# https://jreleaser.org/guide/latest/reference/release/github.html
+release:
+  github:
+    overwrite: true # Overwrite will delete the release.
+    # Release by default
+    releaseName: "Release {{projectEffectiveVersion}}"
+    prerelease:
+      # # A regex to determine if the project version is a prerelease
+      pattern: .*-rc.*
+    # https://jreleaser.org/guide/latest/reference/release/changelog.html
+    changelog:
+      formatted: ALWAYS
+      format: '- {{commitShortHash}} {{commitTitle}}'
+      preset: 'conventional-commits'
+      contributors:
+        enabled: false
+      content: |
+        # Changelog Version {{projectEffectiveVersion}}
+
+        {{changelogChanges}}
+      labelers:
+        - label: 'feature'
+          title: 'Resolves #'
+          body: 'Resolves #'
+        - label: 'issue'
+          title: 'Fixes #'
+          body: 'Fixes #'
+        - label: 'issue'
+          title: 'Relates to #'
+          body: 'Relates to #'
+        - label: 'task'
+          title: '[chore]'
+      categories:
+        - title: '🚀 Features'
+          key: 'features'
+          labels:
+            - 'feature'
+        - title: '✅ Issues'
+          key: 'issues'
+          labels:
+            - 'issue'
+        - title: '🧰 Tasks'
+          key: 'tasks'
+          labels:
+            - 'task'
+      replacers:
+        - search: '\[chore\] '

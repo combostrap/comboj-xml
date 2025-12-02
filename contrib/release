@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+set -TCEeuo pipefail
+
+function synopsis() {
+  cat << EOF
+
+  Release $PROJECT_NAME:
+
+      $(basename "$0") [--assemble-only|-a] [patch|minor|major|early]
+
+    * -a | --assemble-only    : will not release (create the archive only)
+    * -p | --prepare-only     : will not release (create the archive and the packagers manifest only)
+    * patch|minor|major|early : is the type of bump for the semver version (default to early - no bump)
+
+EOF
+}
+
+BUMP_TYPE="early"
+GOAL="release"
+ASSEMBLE_GOAL="assemble"
+PREPARE_GOAL="prepare"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -a | --assemble-only)
+      GOAL="$ASSEMBLE_GOAL"
+      ;;
+    -p | --prepare-only)
+      GOAL="$PREPARE_GOAL"
+      ;;
+    -h | --help)
+      synopsis
+      exit
+      ;;
+    *)
+      BUMP_TYPE=${1}
+      shift
+      break
+      ;;
+  esac
+  shift
+done
+
+NEXT_VERSION="early"
+if [ "$BUMP_TYPE" != "early" ]; then
+  # Get the next version
+  export GIT_CLIFF__BUMP__INITIAL_TAG=v0.1.0 # by default it's 0.1.0
+  NEXT_VERSION=$(git cliff --unreleased --bump "$BUMP_TYPE" --context --tag-pattern "v[0-9]+\\.[0-9]+\\.[0-9]+" | jq -r '.[0].version' | tr -d "v")
+  # Jreleaser read the version from the pom file
+  # We need to modify the pom file
+  mvnw versions:set -DgenerateBackupPoms=false -DnewVersion="$NEXT_VERSION"
+  git commit -am "chore(release): $NEXT_VERSION"
+  git push origin
+fi
+
+# Common Arg
+JRELEASER_FILE="$PROJECT_ROOT/jreleaser.yml"
+JRELEASER_COMMON_ARGS+=(-Djreleaser.config.file="$JRELEASER_FILE" --non-recursive)
+
+# Create the archives
+
+
+mvnw clean jreleaser:assemble "${JRELEASER_COMMON_ARGS[@]}"
+
+if [ "$GOAL" == "$ASSEMBLE_GOAL" ]; then
+  echo "Assemble only version $NEXT_VERSION done"
+  exit
+fi
+
+if [ "$GOAL" == "$PREPARE_GOAL" ]; then
+  mvnw jreleaser:prepare "${JRELEASER_COMMON_ARGS[@]}"
+  echo "Prepare only version $NEXT_VERSION done"
+  exit
+fi
+
+# Release
+mvnw jreleaser:release "${JRELEASER_COMMON_ARGS[@]}"
+echo "Version release of $NEXT_VERSION done"
+
+# Next dev iteration
+if [ "$BUMP_TYPE" != "early" ]; then
+  NEXT_VERSION=$(git cliff --unreleased --bump "patch" --context --tag-pattern "v[0-9]+\\.[0-9]+\\.[0-9]+" | jq -r '.[0].version' | tr -d "v")
+  NEXT_SNAPSHOT_VERSION="$NEXT_VERSION-snapshot"
+  mvnw versions:set -DgenerateBackupPoms=false -DnewVersion="$NEXT_SNAPSHOT_VERSION"
+  git commit -am "chore(next): $NEXT_SNAPSHOT_VERSION"
+  git push origin
+fi
