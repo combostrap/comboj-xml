@@ -1,0 +1,34 @@
+#!/bin/bash
+# `nxmli`: next xmli
+# You can run the next iteration even if xmli is installed on your computer
+
+set -TCEeuo pipefail
+
+# Configuration
+MAIN_CLASS="com.combostrap.xml.cli.Xmli"  # Default main class or first argument
+APP_ARGS=${*}  # Additional arguments passed to the Java application
+
+# Colors for output
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+# If the script is called globally outside the project
+if [ "$PROJECT_ROOT" == "" ]; then
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  PROJECT_ROOT="$SCRIPT_DIR/.."
+fi
+
+# Execute the main class with dependencies
+echo -e "${GREEN}Executing Xmli main class...${NC}"
+echo ""
+"$PROJECT_ROOT"/mvnw \
+    compile \
+    exec:java \
+    -pl cli \
+    -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
+    -Dexec.classpathScope="provided" \
+    -Dexec.mainClass="${MAIN_CLASS}" \
+    -Dexec.arguments="${APP_ARGS}"
+
+echo ""
+echo -e "${GREEN}=== Execution Complete ===${NC}"
