@@ -1,51 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>combostrap-xml-aggregator</artifactId>
-    <packaging>pom</packaging>
-    <version>0.1.0-SNAPSHOT</version>
-    <name>Combostrap XML Aggregator</name>
-    <description>XML Aggregator for library and cli</description>
-    <url>https://github.com/combostrap/comboj-xml</url>
+  <artifactId>combostrap-xml-aggregator</artifactId>
+  <packaging>pom</packaging>
+  <version>0.1.0-SNAPSHOT</version>
+  <name>Combostrap XML Aggregator</name>
+  <description>XML Aggregator for library and cli</description>
+  <url>https://github.com/combostrap/comboj-xml</url>
 
-    <parent>
-        <groupId>com.combostrap</groupId>
-        <artifactId>combostrap-parent</artifactId>
-        <version>0.1.3-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <groupId>com.combostrap</groupId>
+    <artifactId>combostrap-parent</artifactId>
+    <version>0.1.3-SNAPSHOT</version>
+  </parent>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.combostrap</groupId>
-                <artifactId>combostrap-dependencies</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <modules>
-        <module>library</module>
-        <module>cli</module>
-    </modules>
-
+  <dependencyManagement>
     <dependencies>
-
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <scope>test</scope>
-        </dependency>
+      <dependency>
+        <groupId>com.combostrap</groupId>
+        <artifactId>combostrap-dependencies</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
+  </dependencyManagement>
+
+  <modules>
+    <module>library</module>
+    <module>cli</module>
+  </modules>
+
+
+  <!-- Skip deployment of all modules -->
+  <!-- This pom is a module, we don't deploy it -->
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-launcher</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
 </project>
