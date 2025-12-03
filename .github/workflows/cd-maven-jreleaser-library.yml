@@ -57,24 +57,35 @@ jobs:
 
           set -TCEeuo pipefail
 
-          echo "Test"
+          echo "######################"
+          echo "# Test"
+          echo "######################"
           ./mvnw --batch-mode -s .github/cd-maven-settings.xml test
 
-          echo "Check config"
+          echo "######################"
+          echo "# Check config"
+          echo "######################"
           if ! CHECK_CONFIG=$(./mvnw --batch-mode -s .github/cd-maven-settings.xml --quiet jreleaser:config); then
             echo "Error while checking the config"
             echo "$CHECK_CONFIG"
             exit 1
           fi
 
-          echo "Stage Artifacts"
+          echo "######################"
+          echo "# Stage Artifacts"
+          echo "######################"
           # The publication profile should be in the parent or the pom
           # as seen here: https://jreleaser.org/guide/latest/examples/maven/maven-central.html#_maven
           # and here: https://jreleaser.org/guide/latest/examples/maven/staging-artifacts.html
           # It will attach the maven-javadoc-plugin and maven-source-plugin
-          ./mvnw --batch-mode -s .github/cd-maven-settings.xml --quiet -Ppublication
+          ./mvnw --batch-mode -s .github/cd-maven-settings.xml -DskipTests -Ppublication
 
           # Deploy snapshot or release
           # https://jreleaser.org/guide/latest/tools/jreleaser-maven.html#_jreleaserdeploy
-          echo "Deploy snapshot or release"
+          echo "######################"
+          echo "Deploy staged artifact to maven central"
+          echo "######################"
+          # JReleaser deployment do not follow the maven.deploy.skip property
+          # It just run for each module and publish what it found in the root module project target directory
+          # non-recursive is to run only once from the root
           ./mvnw --batch-mode -s .github/cd-maven-settings.xml -DskipTests jreleaser:deploy --non-recursive
